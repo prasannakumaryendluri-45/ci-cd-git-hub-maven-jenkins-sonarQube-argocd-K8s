@@ -24,34 +24,51 @@ pipeline {
 
         stage('Build and Test') {
             steps {
-                sh """
-                    echo "Workspace: ${WORKSPACE}"
-                    ls -R ${WORKSPACE}
-                    cd ${WORKSPACE}/my-java-cicd-project/java-app || { echo 'Folder not found'; exit 1; }
-                    java -version
-                    mvn -version
-                    mvn clean package -B -e
-                """
+                script {
+                    def appDir = "${WORKSPACE}/my-java-cicd-project/java-app"
+                    if (fileExists("${appDir}/pom.xml")) {
+                        sh """
+                            echo "Building Java project in ${appDir}"
+                            cd ${appDir}
+                            java -version
+                            mvn -version
+                            mvn clean package -B -e
+                        """
+                    } else {
+                        error "ERROR: pom.xml not found in ${appDir}. Check your repo structure."
+                    }
+                }
             }
         }
 
         stage('Static Code Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    sh """
-                        cd ${WORKSPACE}/my-java-cicd-project/java-app
-                        mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL} -B
-                    """
+                    script {
+                        def appDir = "${WORKSPACE}/my-java-cicd-project/java-app"
+                        if (fileExists("${appDir}/pom.xml")) {
+                            sh """
+                                cd ${appDir}
+                                mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL} -B
+                            """
+                        } else {
+                            echo "Skipping SonarQube analysis, pom.xml not found."
+                        }
+                    }
                 }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh """
-                    cd ${WORKSPACE}/my-java-cicd-project/java-app
-                    docker build -t ${DOCKER_IMAGE} .
-                """
+                script {
+                    def appDir = "${WORKSPACE}/my-java-cicd-project/java-app"
+                    if (fileExists("${appDir}/Dockerfile")) {
+                        sh "docker build -t ${DOCKER_IMAGE} ${appDir}"
+                    } else {
+                        echo "Skipping Docker build, Dockerfile not found in ${appDir}"
+                    }
+                }
             }
         }
 
@@ -68,17 +85,21 @@ pipeline {
         stage('Update Deployment File') {
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                    sh """
-                        git config user.email "prasannayendluri45@gmail.com"
-                        git config user.name "Prasanna Yendluri"
-
-                        sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" ${WORKSPACE}/my-java-cicd-project/java-manifests/deployment.yaml
-
-                        git add ${WORKSPACE}/my-java-cicd-project/java-manifests/deployment.yaml
-                        git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
-
-                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                    """
+                    script {
+                        def deployFile = "${WORKSPACE}/my-java-cicd-project/java-manifests/deployment.yaml"
+                        if (fileExists(deployFile)) {
+                            sh """
+                                git config user.email "prasannayendluri45@gmail.com"
+                                git config user.name "Prasanna Yendluri"
+                                sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" ${deployFile}
+                                git add ${deployFile}
+                                git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
+                                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                            """
+                        } else {
+                            echo "Deployment file not found, skipping update."
+                        }
+                    }
                 }
             }
         }
