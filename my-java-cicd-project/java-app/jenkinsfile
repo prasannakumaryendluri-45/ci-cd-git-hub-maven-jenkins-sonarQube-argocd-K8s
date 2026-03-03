@@ -68,7 +68,7 @@ pipeline {
             git config user.email "prasannayendluri45@gmail.com"
             git config user.name "Prasanna Yendluri"
 
-            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" my-java-cicd-project/java-manifests/deployment.yaml
+            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" my-java-cicd-project/java-manifests/deployment.yml
 
             git add my-java-cicd-project/java-manifests/deployment.yaml
             git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
