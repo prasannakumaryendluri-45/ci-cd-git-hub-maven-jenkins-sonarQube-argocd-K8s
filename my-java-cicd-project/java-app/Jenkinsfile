@@ -40,7 +40,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('sonarqube-server') {
                     dir('my-java-cicd-project/java-app') {
                         sh 'mvn sonar:sonar'
                     }
