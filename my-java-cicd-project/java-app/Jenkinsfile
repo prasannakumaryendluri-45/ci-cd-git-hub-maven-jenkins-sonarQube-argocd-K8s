@@ -38,14 +38,14 @@ pipeline {
             }
         }
 
-         stage('SonarQube Analysis') {
-             steps {
-                 withSonarQubeEnv(CerdentialsId: 'jenkins-sonarqube token') {
-                  dir('my-java-cicd-project/java-app') {
-                    sh 'mvn sonar:sonar'
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir('my-java-cicd-project/java-app') {
+                        sh 'mvn sonar:sonar'
                     }
                 }
-             }
-         }
+            }
+        }
     }
 }
