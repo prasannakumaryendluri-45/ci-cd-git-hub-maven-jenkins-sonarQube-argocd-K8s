@@ -11,6 +11,7 @@ pipeline {
         RELEASE = "1.0.0"
         DOCKER_USER = "prasannakumaryendluri45"
         DOCKER_CREDENTIALS = "dockerhub"
+
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
     }
@@ -68,12 +69,15 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('', "${DOCKER_CREDENTIALS}") {
+                    dir('my-java-cicd-project/java-app') {
 
-                        def dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                        docker.withRegistry('', "${DOCKER_CREDENTIALS}") {
 
-                        dockerImage.push()
-                        dockerImage.push('latest')
+                            def dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+
+                            dockerImage.push()
+                            dockerImage.push('latest')
+                        }
                     }
                 }
             }
