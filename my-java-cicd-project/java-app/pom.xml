@@ -14,7 +14,10 @@
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
+    <!-- FIX: stable jar name for Docker -->
     <build>
+        <finalName>ci-cd-java-app</finalName>
+
         <plugins>
 
             <plugin>
