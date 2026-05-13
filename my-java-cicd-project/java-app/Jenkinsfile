@@ -5,13 +5,14 @@ pipeline {
         jdk 'Java17'
         maven 'Maven3'
     }
+
     environment {
-          APP_NAME = "java-app"
-          RELEASE = "1.0.0"
-          DOCKER_USER = "prasannakumaryendluri45"
-          DOCKER_PASS = "dockerhub"
-          IMAGE_NAME = "${DOCKER_USER}"+ "/" + ${APP_NAME}
-          IMAGE_TAG = "${RELEASE}"-${BUILD_NUMBER}
+        APP_NAME = "java-app"
+        RELEASE = "1.0.0"
+        DOCKER_USER = "prasannakumaryendluri45"
+        DOCKER_CREDENTIALS = "dockerhub"
+        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
+        IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
     }
 
     stages {
@@ -63,18 +64,17 @@ pipeline {
                 }
             }
         }
-        stage('Build and Push DOCKER Image') {
-            steps{
-                script{
-                    docker.WithRegistry('',Docker_Pass
-                                        {
-                      docker_image=docker.build "${IMAGE_NAME}"
-                                        }
-                }
-                   docker.WithRegistry('',Docker_pass) 
-                {
-                   docker_image.push("${IMAGE_TAG}")
-                   docker_image.push('latest')
+
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('', "${DOCKER_CREDENTIALS}") {
+
+                        def dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+
+                        dockerImage.push()
+                        dockerImage.push('latest')
+                    }
                 }
             }
         }
