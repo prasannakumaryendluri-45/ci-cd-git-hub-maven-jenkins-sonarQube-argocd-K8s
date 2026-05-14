@@ -49,14 +49,14 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonarqube-server') {
-                    dir('my-java-cicd-project/java-app') {
-                        sh 'mvn sonar:sonar'
-                    }
-                }
+    steps {
+        withEnv(["SONAR_HOST_URL=http://10.0.142.209:9000"]) {
+            dir('my-java-cicd-project/java-app') {
+                sh 'mvn sonar:sonar -Dsonar.host.url=$SONAR_HOST_URL'
             }
         }
+    }
+}
 
         stage('Quality Gate') {
             steps {
