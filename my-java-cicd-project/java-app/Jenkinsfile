@@ -48,15 +48,16 @@ pipeline {
             }
         }
 
-       stage('SonarQube Analysis') {
-    steps {
-        dir('java-app') {
-            withSonarQubeEnv('sonarqube-server') {
-                sh 'mvn clean verify sonar:sonar'
+        stage('SonarQube Analysis') {
+            steps {
+                dir('my-java-cicd-project/java-app') {
+                    withSonarQubeEnv('sonarqube-server') {
+                        sh 'mvn clean verify sonar:sonar'
+                    }
+                }
             }
         }
-    }
-}
+
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
@@ -81,20 +82,30 @@ pipeline {
                 }
             }
         }
+
         stage("Trivy Scan") {
-           steps {
-               script {
-	            sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image prasannakumaryendluri45/java-app:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
-               }
-           }
-       }
-        stage ('Cleanup Artifacts') {
-           steps {
-               script {
-                    sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
-                    sh "docker rmi ${IMAGE_NAME}:latest"
-               }
-          }
-       }
+            steps {
+                script {
+                    sh """
+                    docker run -v /var/run/docker.sock:/var/run/docker.sock \
+                    aquasec/trivy image ${IMAGE_NAME}:latest \
+                    --no-progress \
+                    --scanners vuln \
+                    --exit-code 0 \
+                    --severity HIGH,CRITICAL \
+                    --format table
+                    """
+                }
+            }
+        }
+
+        stage('Cleanup Artifacts') {
+            steps {
+                script {
+                    sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
+                    sh "docker rmi ${IMAGE_NAME}:latest || true"
+                }
+            }
+        }
     }
 }
