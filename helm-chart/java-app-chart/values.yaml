@@ -1,0 +1,12 @@
+replicaCount: 2
+
+image:
+  repository: prasannakumaryendluri/java-app
+  pullPolicy: Always
+  tag: latest
+
+service:
+  type: ClusterIP
+  port: 8080
+
+containerPort: 8080
