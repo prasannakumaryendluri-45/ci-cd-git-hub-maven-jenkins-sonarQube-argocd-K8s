@@ -49,10 +49,10 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-    steps {
-        withEnv(["SONAR_HOST_URL=http://10.0.142.209:9000"]) {
-            dir('my-java-cicd-project/java-app') {
-                sh 'mvn sonar:sonar -Dsonar.host.url=$SONAR_HOST_URL'
+                  steps {
+                     script {
+                        withSonarQubeEnv(credentialsId: 'jenkins-sonarqube_token') {
+                           sh 'mvn sonar:sonar'
             }
         }
     }
