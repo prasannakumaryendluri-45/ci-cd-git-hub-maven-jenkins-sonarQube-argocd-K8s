@@ -26,12 +26,21 @@
     </dependencies>
 
     <build>
-        <finalName>ci-cd-java-app</finalName>
+        <!-- IMPORTANT: remove fixed jar name -->
+        <finalName>java-app</finalName>
 
         <plugins>
+            <!-- THIS IS CRITICAL -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
