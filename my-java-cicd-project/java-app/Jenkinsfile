@@ -33,12 +33,12 @@ pipeline {
         }
 
         stage('Build') {
-            steps {
-                dir('my-java-cicd-project/java-app') {
-                    sh 'mvn clean package'
-                }
-            }
+    steps {
+        dir('my-java-cicd-project/java-app') {
+            sh 'mvn clean package -DskipTests'
         }
+    }
+}
 
         stage('Test') {
             steps {
