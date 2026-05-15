@@ -167,7 +167,7 @@ image:
   tag: latest
 
 service:
-  type: ClusterIP
+  type:LoadBalancer
   port: 8080
 
 containerPort: 8080
